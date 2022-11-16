@@ -14,5 +14,8 @@
             "email": "jonas@sumocoders.be"
         }
     ],
-    "require": {}
+    "require": {
+        "php": "^7.4",
+        "psr/http-client": "^1.0"
+    }
 }
