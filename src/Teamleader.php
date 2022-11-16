@@ -63,14 +63,47 @@ final class Teamleader
         $response = $this->client->sendRequest($request);
 
         if ($response->getStatusCode() !== 200) {
-            throw new TeamleaderException('Could not acquire tokens');
+            throw new TeamleaderException('Could not acquire access token');
         }
 
         try {
             $tokens = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException $exception) {
             throw new TeamleaderException(
-                'Could not acquire tokens, json decode failed. Got response: ' . $response->getBody()->getContents()
+                'Could not acquire access token, json decode failed. Got response: '
+                . $response->getBody()->getContents()
+            );
+        }
+
+        $this->tokenStorage->storeTokens($tokens);
+    }
+
+    public function acquireRefreshToken(): void
+    {
+        $data = [
+            'client_id' => $this->clientId,
+            'client_secret' => $this->clientSecret,
+            'refresh_token' => $this->tokenStorage->getRefreshToken(),
+            'grant_type' => 'refresh_token',
+        ];
+        $body = $this->streamFactory->createStream(json_encode($data));
+        $request = $this
+            ->requestFactory
+            ->createRequest('POST', $this->tokenUrl)
+            ->withBody($body)
+            ->withHeader('Content-Type', 'application/json');
+        $response = $this->client->sendRequest($request);
+
+        if ($response->getStatusCode() !== 200) {
+            throw new TeamleaderException('Could not acquire refresh token');
+        }
+
+        try {
+            $tokens = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new TeamleaderException(
+                'Could not acquire refresh token, json decode failed. Got response: '
+                . $response->getBody()->getContents()
             );
         }
 
@@ -89,6 +122,23 @@ final class Teamleader
 
         header('Location: ' . $url);
         exit;
+    }
+
+    private function getAccessToken(): ?string
+    {
+        $accesstoken = $this->tokenStorage->getAccessToken();
+        if ($accesstoken && !$this->tokenStorage->isExpired()) {
+            return $accesstoken;
+        }
+
+        $refreshToken = $this->tokenStorage->getRefreshToken();
+        if ($refreshToken) {
+            $this->acquireRefreshToken();
+
+            return $this->getAccessToken();
+        }
+
+        return null;
     }
 
     public function makeRequest(RequestInterface $request): ResponseInterface
