@@ -2,18 +2,21 @@
 
 namespace Sumocoders\TeamleaderOauth2;
 
+use JsonException;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Sumocoders\TeamleaderOauth2\Exception\TeamleaderException;
+use Sumocoders\TeamleaderOauth2\Storage\TokenStorageInterface;
 
 final class Teamleader
 {
     private ClientInterface $client;
     private RequestFactoryInterface $requestFactory;
     private StreamFactoryInterface $streamFactory;
+    private TokenStorageInterface $tokenStorage;
     private string $apiUrl = 'https://api.focus.teamleader.eu';
     private string $authorizationUrl = 'https://focus.teamleader.eu/oauth2/authorize';
     private string $tokenUrl = 'https://focus.teamleader.eu/oauth2/access_token';
@@ -25,13 +28,15 @@ final class Teamleader
         string $clientSecret,
         ClientInterface $client,
         RequestFactoryInterface $requestFactory,
-        StreamFactoryInterface $streamFactory
+        StreamFactoryInterface $streamFactory,
+        TokenStorageInterface $tokenStorage
     ) {
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
         $this->client = $client;
         $this->requestFactory = $requestFactory;
         $this->streamFactory = $streamFactory;
+        $this->tokenStorage = $tokenStorage;
     }
 
     public function acquireAccessToken(string $redirectUrl, ?string $code = null): void
@@ -61,7 +66,15 @@ final class Teamleader
             throw new TeamleaderException('Could not acquire tokens');
         }
 
-        // todo store tokens
+        try {
+            $tokens = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new TeamleaderException(
+                'Could not acquire tokens, json decode failed. Got response: ' . $response->getBody()->getContents()
+            );
+        }
+
+        $this->tokenStorage->storeTokens($tokens);
     }
 
     private function redirectToAuthorizationPage(string $redirectUrl): void
