@@ -180,7 +180,7 @@ final class Teamleader
         $body = $this->streamFactory->createStream(json_encode($parameters));
         $request = $this
             ->requestFactory
-            ->createRequest('GET', self::API_URL . '/' . $uri)
+            ->createRequest('POST', self::API_URL . '/' . $uri)
             ->withBody($body)
             ->withHeader('Content-Type', 'application/json')
             ->withHeader(
