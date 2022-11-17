@@ -5,8 +5,6 @@ namespace Sumocoders\TeamleaderOauth2;
 use JsonException;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Sumocoders\TeamleaderOauth2\Exception\TeamleaderException;
 use Sumocoders\TeamleaderOauth2\Storage\TokenStorageInterface;
@@ -17,9 +15,9 @@ final class Teamleader
     private RequestFactoryInterface $requestFactory;
     private StreamFactoryInterface $streamFactory;
     private TokenStorageInterface $tokenStorage;
-    private string $apiUrl = 'https://api.focus.teamleader.eu';
-    private string $authorizationUrl = 'https://focus.teamleader.eu/oauth2/authorize';
-    private string $tokenUrl = 'https://focus.teamleader.eu/oauth2/access_token';
+    private const API_URL = 'https://api.focus.teamleader.eu';
+    private const AUTHORIZATION_URL = 'https://focus.teamleader.eu/oauth2/authorize';
+    private const TOKEN_URL = 'https://focus.teamleader.eu/oauth2/access_token';
     private string $clientId;
     private string $clientSecret;
 
@@ -57,7 +55,7 @@ final class Teamleader
         $body = $this->streamFactory->createStream(json_encode($data));
         $request = $this
             ->requestFactory
-            ->createRequest('POST', $this->tokenUrl)
+            ->createRequest('POST', self::TOKEN_URL)
             ->withBody($body)
             ->withHeader('Content-Type', 'application/json');
         $response = $this->client->sendRequest($request);
@@ -89,7 +87,7 @@ final class Teamleader
         $body = $this->streamFactory->createStream(json_encode($data));
         $request = $this
             ->requestFactory
-            ->createRequest('POST', $this->tokenUrl)
+            ->createRequest('POST', self::TOKEN_URL)
             ->withBody($body)
             ->withHeader('Content-Type', 'application/json');
         $response = $this->client->sendRequest($request);
@@ -118,7 +116,7 @@ final class Teamleader
             'response_type' => 'code',
         ];
 
-        $url = $this->authorizationUrl . '?' . http_build_query($parameters);
+        $url = self::AUTHORIZATION_URL . '?' . http_build_query($parameters);
 
         header('Location: ' . $url);
         exit;
@@ -143,7 +141,7 @@ final class Teamleader
 
     public function get(string $uri, array $parameters = []): array
     {
-        $fullUrl = $this->apiUrl . '/' . $uri;
+        $fullUrl = self::API_URL . '/' . $uri;
         if (!empty($parameters)) {
             $fullUrl .= '?' . http_build_query($parameters);
         }
@@ -182,7 +180,7 @@ final class Teamleader
         $body = $this->streamFactory->createStream(json_encode($parameters));
         $request = $this
             ->requestFactory
-            ->createRequest('GET', $this->apiUrl . '/' . $uri)
+            ->createRequest('GET', self::API_URL . '/' . $uri)
             ->withBody($body)
             ->withHeader('Content-Type', 'application/json')
             ->withHeader(
