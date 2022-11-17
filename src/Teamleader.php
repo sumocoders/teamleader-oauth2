@@ -52,7 +52,15 @@ final class Teamleader
             'grant_type' => 'authorization_code',
             'redirect_uri' => $redirectUrl,
         ];
-        $body = $this->streamFactory->createStream(json_encode($data));
+
+        $encodedData = json_encode($data);
+        if (!$encodedData) {
+            throw new TeamleaderException(
+                'Could not encode data.'
+            );
+        }
+
+        $body = $this->streamFactory->createStream($encodedData);
         $request = $this
             ->requestFactory
             ->createRequest('POST', self::TOKEN_URL)
@@ -84,7 +92,15 @@ final class Teamleader
             'refresh_token' => $this->tokenStorage->getRefreshToken(),
             'grant_type' => 'refresh_token',
         ];
-        $body = $this->streamFactory->createStream(json_encode($data));
+
+        $encodedData = json_encode($data);
+        if (!$encodedData) {
+            throw new TeamleaderException(
+                'Could not encode data.'
+            );
+        }
+
+        $body = $this->streamFactory->createStream($encodedData);
         $request = $this
             ->requestFactory
             ->createRequest('POST', self::TOKEN_URL)
@@ -139,6 +155,10 @@ final class Teamleader
         return null;
     }
 
+    /**
+     * @param array<string> $parameters
+     * @return array<mixed>
+     */
     public function get(string $uri, array $parameters = []): array
     {
         $fullUrl = self::API_URL . '/' . $uri;
@@ -179,9 +199,20 @@ final class Teamleader
         return $decodedResponse['data'];
     }
 
+    /**
+     * @param array<string> $parameters
+     * @return array<mixed>
+     */
     public function post(string $uri, array $parameters = []): ?array
     {
-        $body = $this->streamFactory->createStream(json_encode($parameters));
+        $encodedParameters = json_encode($parameters);
+        if (!$encodedParameters) {
+            throw new TeamleaderException(
+                'Could not encode parameters.'
+            );
+        }
+
+        $body = $this->streamFactory->createStream($encodedParameters);
         $request = $this
             ->requestFactory
             ->createRequest('POST', self::API_URL . '/' . $uri)

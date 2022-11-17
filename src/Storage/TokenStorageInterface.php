@@ -8,5 +8,6 @@ interface TokenStorageInterface
     public function getAccessToken(): ?string;
     public function getRefreshToken(): ?string;
     public function isExpired(): bool;
+    /** @param array<string> $tokens */
     public function storeTokens(array $tokens): void;
 }
