@@ -152,7 +152,11 @@ final class Teamleader
             ->withHeader('Content-Type', 'application/json')
             ->withHeader(
                 'Authorization',
-                $this->tokenStorage->getTokenType() . ' ' . $this->getAccessToken()
+                sprintf(
+                    '%s %s',
+                    $this->tokenStorage->getTokenType(),
+                    $this->getAccessToken()
+                ),
             );
 
         $response = $this->client->sendRequest($request);
@@ -185,7 +189,11 @@ final class Teamleader
             ->withHeader('Content-Type', 'application/json')
             ->withHeader(
                 'Authorization',
-                $this->tokenStorage->getTokenType() . ' ' . $this->getAccessToken()
+                sprintf(
+                    '%s %s',
+                    $this->tokenStorage->getTokenType(),
+                    $this->getAccessToken()
+                ),
             );
 
         $response = $this->client->sendRequest($request);
