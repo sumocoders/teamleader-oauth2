@@ -41,8 +41,6 @@ final class Teamleader
     {
         if (!$code) {
             $this->redirectToAuthorizationPage($redirectUrl);
-
-            return;
         }
 
         $data = [
