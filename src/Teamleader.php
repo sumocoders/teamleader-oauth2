@@ -141,10 +141,77 @@ final class Teamleader
         return null;
     }
 
-    public function makeRequest(RequestInterface $request): ResponseInterface
+    public function get(string $uri, array $parameters = []): array
     {
-        // todo error handling
+        $fullUrl = $this->apiUrl . '/' . $uri;
+        if (!empty($parameters)) {
+            $fullUrl .= '?' . http_build_query($parameters);
+        }
 
-        return $this->client->sendRequest($request);
+        $request = $this
+            ->requestFactory
+            ->createRequest('GET', $fullUrl)
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader(
+                'Authorization',
+                $this->tokenStorage->getTokenType() . ' ' . $this->getAccessToken()
+            );
+
+        $response = $this->client->sendRequest($request);
+
+        if ($response->getStatusCode() !== 200) {
+            throw new TeamleaderException(
+                'Could not get data from Teamleader. Got response: ' . $response->getBody()->getContents()
+            );
+        }
+
+        try {
+            $decodedResponse = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new TeamleaderException(
+                'Could not get data from Teamleader, json decode failed. Got response: '
+                . $response->getBody()->getContents()
+            );
+        }
+
+        return $decodedResponse['data'];
+    }
+
+    public function post(string $uri, array $parameters = []): ?array
+    {
+        $body = $this->streamFactory->createStream(json_encode($parameters));
+        $request = $this
+            ->requestFactory
+            ->createRequest('GET', $this->apiUrl . '/' . $uri)
+            ->withBody($body)
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader(
+                'Authorization',
+                $this->tokenStorage->getTokenType() . ' ' . $this->getAccessToken()
+            );
+
+        $response = $this->client->sendRequest($request);
+
+        if (!in_array($response->getStatusCode(), [200, 201, 204])) {
+            throw new TeamleaderException(
+                'Could not get data from Teamleader. Got response: ' . $response->getBody()->getContents()
+            );
+        }
+
+        $responseContent = $response->getBody()->getContents();
+        if ($responseContent === '') {
+            return null;
+        }
+
+        try {
+            $decodedResponse = json_decode($responseContent, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new TeamleaderException(
+                'Could not get data from Teamleader, json decode failed. Got response: '
+                . $response->getBody()->getContents()
+            );
+        }
+
+        return $decodedResponse['data'];
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Sumocoders\TeamleaderOauth2\Storage;
 
 interface TokenStorageInterface
