@@ -13,7 +13,7 @@ For saving the access we provide a TokenStorageInterface, where you'll need to i
 ```php
 interface TokenStorageInterface
 {
-    public function getTokenType(): ?string;
+    public function getTokenType(): string;
     public function getAccessToken(): ?string;
     public function getRefreshToken(): ?string;
     public function isExpired(): bool;
