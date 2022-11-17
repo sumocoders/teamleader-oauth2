@@ -154,19 +154,19 @@ final class Teamleader
     }
 
     /**
-     * @param array<string> $parameters
+     * @param array<mixed> $parameters
      * @return array<mixed>
      */
-    public function get(string $uri, array $parameters = []): array
+    private function doRequest(string $method, string $uri, array $parameters = []): ?array
     {
-        $fullUrl = self::API_URL . '/' . $uri;
-        if (!empty($parameters)) {
-            $fullUrl .= '?' . http_build_query($parameters);
+        $url = self::API_URL . '/' . $uri;
+        if ($method === 'GET' && !empty($parameters)) {
+            $url .= '?' . http_build_query($parameters);
         }
 
         $request = $this
             ->requestFactory
-            ->createRequest('GET', $fullUrl)
+            ->createRequest($method, $url)
             ->withHeader('Content-Type', 'application/json')
             ->withHeader(
                 'Authorization',
@@ -177,53 +177,17 @@ final class Teamleader
                 ),
             );
 
-        $response = $this->client->sendRequest($request);
+        if ($method === 'POST') {
+            $encodedParameters = json_encode($parameters);
+            if (!$encodedParameters) {
+                throw new TeamleaderException(
+                    'Could not encode parameters.'
+                );
+            }
 
-        if ($response->getStatusCode() !== 200) {
-            throw new TeamleaderException(
-                'Could not get data from Teamleader. Got response: ' . $response->getBody()->getContents()
-            );
+            $body = $this->streamFactory->createStream($encodedParameters);
+            $request->withBody($body);
         }
-
-        try {
-            $decodedResponse = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $exception) {
-            throw new TeamleaderException(
-                'Could not get data from Teamleader, json decode failed. Got response: '
-                . $response->getBody()->getContents()
-            );
-        }
-
-        return $decodedResponse['data'];
-    }
-
-    /**
-     * @param array<string> $parameters
-     * @return array<mixed>
-     */
-    public function post(string $uri, array $parameters = []): ?array
-    {
-        $encodedParameters = json_encode($parameters);
-        if (!$encodedParameters) {
-            throw new TeamleaderException(
-                'Could not encode parameters.'
-            );
-        }
-
-        $body = $this->streamFactory->createStream($encodedParameters);
-        $request = $this
-            ->requestFactory
-            ->createRequest('POST', self::API_URL . '/' . $uri)
-            ->withBody($body)
-            ->withHeader('Content-Type', 'application/json')
-            ->withHeader(
-                'Authorization',
-                sprintf(
-                    '%s %s',
-                    $this->tokenStorage->getTokenType(),
-                    $this->getAccessToken()
-                ),
-            );
 
         $response = $this->client->sendRequest($request);
 
@@ -239,7 +203,7 @@ final class Teamleader
         }
 
         try {
-            $decodedResponse = json_decode($responseContent, true, 512, JSON_THROW_ON_ERROR);
+            $decodedResponse = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException $exception) {
             throw new TeamleaderException(
                 'Could not get data from Teamleader, json decode failed. Got response: '
@@ -248,5 +212,23 @@ final class Teamleader
         }
 
         return $decodedResponse['data'];
+    }
+
+    /**
+     * @param array<mixed> $parameters
+     * @return array<mixed>
+     */
+    public function get(string $uri, array $parameters = []): array
+    {
+        return $this->doRequest('GET', $uri, $parameters);
+    }
+
+    /**
+     * @param array<mixed> $parameters
+     * @return array<mixed>
+     */
+    public function post(string $uri, array $parameters = []): ?array
+    {
+        return $this->doRequest('POST', $uri, $parameters);
     }
 }
