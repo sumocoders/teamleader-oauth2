@@ -203,7 +203,7 @@ final class Teamleader
         }
 
         try {
-            $decodedResponse = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+            $decodedResponse = json_decode($responseContent, true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException $exception) {
             throw new TeamleaderException(
                 'Could not get data from Teamleader, json decode failed. Got response: '
