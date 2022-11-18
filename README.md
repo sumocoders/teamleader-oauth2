@@ -21,7 +21,7 @@ interface TokenStorageInterface
 }
 ```
 
-See [example](https://github.com/sumocoders/teamleader-oauth2/blob/main/src/examples/FilesystemTokenStorage.php) how to do it with filesystem.
+Look at the [default token storage class](https://github.com/sumocoders/teamleader-oauth2/blob/main/src/Storage/FilesystemTokenStorage.php) how you can make your own implementation.
 
 The Teamleader class will need a clientId and clientSecret. Which you'll need to obtain at the [Teamleader marketplace](https://marketplace.teamleader.eu/).
 

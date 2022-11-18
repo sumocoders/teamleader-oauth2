@@ -1,8 +1,6 @@
 <?php
 
-namespace App\Teamleader\Storage;
-
-use Sumocoders\TeamleaderOauth2\Storage\TokenStorageInterface;
+namespace Sumocoders\TeamleaderOauth2\Storage;
 
 final class FilesystemTokenStorage implements TokenStorageInterface
 {
