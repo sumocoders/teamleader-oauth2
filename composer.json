@@ -1,0 +1,27 @@
+{
+    "name": "sumocoders/teamleader-oauth2",
+    "description": "PHP Teamleader oauth2 package to connect with Teamleader API (https://developer.teamleader.eu/)",
+    "type": "library",
+    "license": "BSD-2-Clause",
+    "autoload": {
+        "psr-4": {
+            "Sumocoders\\TeamleaderOauth2\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Jonas De Keukelaere",
+            "email": "jonas@sumocoders.be"
+        }
+    ],
+    "require": {
+        "php": "^7.4",
+        "psr/http-client": "^1.0",
+        "psr/http-factory": "^1.0",
+        "ext-json": "*"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.7",
+        "phpstan/phpstan": "^1.9"
+    }
+}

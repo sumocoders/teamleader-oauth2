@@ -1,0 +1,7 @@
+services:
+  errorFormatter.junit:
+    class: PHPStan\Command\ErrorFormatter\JUnitErrorFormatter
+parameters:
+  level: 7
+  paths:
+    - src/
