@@ -186,7 +186,7 @@ final class Teamleader
             }
 
             $body = $this->streamFactory->createStream($encodedParameters);
-            $request->withBody($body);
+            $request = $request->withBody($body);
         }
 
         $response = $this->client->sendRequest($request);
